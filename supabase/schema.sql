@@ -9,8 +9,12 @@ create table if not exists public.scholarships (
   deadline    date not null,
   link        text not null,
   description text,
+  eligibility text,
   created_at  timestamptz not null default now()
 );
+
+-- Add eligibility column if upgrading from an older schema
+alter table public.scholarships add column if not exists eligibility text;
 
 create table if not exists public.preferences (
   id            uuid primary key default gen_random_uuid(),

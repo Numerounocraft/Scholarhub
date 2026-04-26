@@ -51,6 +51,38 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").trim();
 }
 
+function extractEligibility(text: string): string | null {
+  const lower = text.toLowerCase();
+
+  // Try to find an explicit eligibility section
+  const sectionPatterns = [
+    /eligibility[:\s–-]+([^.]*(?:\.[^.]*){0,5})/i,
+    /who can apply[:\s–-]+([^.]*(?:\.[^.]*){0,5})/i,
+    /requirements[:\s–-]+([^.]*(?:\.[^.]*){0,5})/i,
+    /criteria[:\s–-]+([^.]*(?:\.[^.]*){0,5})/i,
+  ];
+
+  for (const pattern of sectionPatterns) {
+    const match = text.match(pattern);
+    const captured = match?.[1]?.trim() ?? "";
+    if (captured.length > 20) {
+      return captured.slice(0, 800);
+    }
+  }
+
+  // Fall back: collect sentences mentioning eligibility keywords
+  const sentences = text.split(/(?<=[.!?])\s+/);
+  const eligibilitySentences = sentences.filter((s) =>
+    /must (be|have)|eligible|citizen|national|applicant|open to|requirement|qualif|enroll|degree|gpa|age limit/i.test(s)
+  );
+
+  if (eligibilitySentences.length > 0) {
+    return eligibilitySentences.slice(0, 4).join(" ").slice(0, 800);
+  }
+
+  return null;
+}
+
 function classify<T extends string>(
   text: string,
   keywords: [string, T][],
@@ -111,6 +143,7 @@ interface ParsedItem {
   title: string;
   link: string;
   description: string;
+  eligibility: string | null;
 }
 
 async function fetchFeed(feedUrl: string): Promise<ParsedItem[]> {
@@ -149,15 +182,17 @@ async function fetchFeed(feedUrl: string): Promise<ParsedItem[]> {
           : ""
       ).trim();
 
-      const description = stripHtml(
+      const rawText = stripHtml(
         String(
           typeof i.description === "object" && i.description !== null
             ? (i.description as Record<string, unknown>)["#text"] ?? ""
             : i.description ?? i.summary ?? i.content ?? ""
         )
-      ).slice(0, 600);
+      );
+      const description = rawText.slice(0, 1000);
+      const eligibility = extractEligibility(rawText);
 
-      return { title, link, description };
+      return { title, link, description, eligibility };
     })
     .filter((i) => i.title && i.link);
 }
@@ -208,6 +243,7 @@ export async function POST(request: Request) {
           deadline,
           link: item.link,
           description: item.description || null,
+          eligibility: item.eligibility || null,
         },
         { onConflict: "link", ignoreDuplicates: true }
       );

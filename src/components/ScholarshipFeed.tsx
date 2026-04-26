@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import FilterBar, { type Filters } from "@/components/FilterBar";
 import ScholarshipCard from "@/components/ScholarshipCard";
+import ScholarshipDrawer from "@/components/ScholarshipDrawer";
 import type { Scholarship } from "@/lib/types";
 
 const EMPTY_FILTERS: Filters = {
@@ -36,6 +37,7 @@ export default function ScholarshipFeed() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  const [activeScholarship, setActiveScholarship] = useState<Scholarship | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -82,6 +84,10 @@ export default function ScholarshipFeed() {
 
   return (
     <div className="flex flex-col gap-4">
+      <ScholarshipDrawer
+        scholarship={activeScholarship}
+        onClose={() => setActiveScholarship(null)}
+      />
       <FilterBar
         filters={filters}
         onChange={setFilters}
@@ -116,7 +122,7 @@ export default function ScholarshipFeed() {
       {!loading && !error && displayed.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {displayed.map((s) => (
-            <ScholarshipCard key={s.id} scholarship={s} />
+            <ScholarshipCard key={s.id} scholarship={s} onDetails={setActiveScholarship} />
           ))}
         </div>
       )}

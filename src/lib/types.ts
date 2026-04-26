@@ -9,6 +9,7 @@ export interface Scholarship {
   deadline: string; // ISO date string
   link: string;
   description: string | null;
+  eligibility: string | null;
   created_at: string;
 }
 

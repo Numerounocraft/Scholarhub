@@ -61,8 +61,10 @@ function DeadlineChip({ deadline }: { deadline: string }) {
 
 export default function ScholarshipCard({
   scholarship,
+  onDetails,
 }: {
   scholarship: Scholarship;
+  onDetails?: (s: Scholarship) => void;
 }) {
   const { title, country, field, degree_level, deadline, link, description } =
     scholarship;
@@ -111,14 +113,24 @@ export default function ScholarshipCard({
       {/* Footer */}
       <div className="mt-4 flex items-center justify-between">
         <DeadlineChip deadline={deadline} />
-        <a
-          href={link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex h-7 items-center rounded-full bg-primary px-3 text-xs font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
-        >
-          Apply
-        </a>
+        <div className="flex items-center gap-2">
+          {onDetails && (
+            <button
+              onClick={() => onDetails(scholarship)}
+              className="inline-flex h-7 items-center rounded-full border border-input px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              Details
+            </button>
+          )}
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-7 items-center rounded-full bg-primary px-3 text-xs font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+          >
+            Apply
+          </a>
+        </div>
       </div>
     </div>
   );
