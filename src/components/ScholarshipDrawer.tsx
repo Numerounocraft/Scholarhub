@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -24,6 +24,9 @@ interface Props {
 }
 
 export default function ScholarshipDrawer({ scholarship, onClose }: Props) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -72,6 +75,8 @@ export default function ScholarshipDrawer({ scholarship, onClose }: Props) {
   const formattedDeadline = scholarship
     ? format(parseISO(scholarship.deadline), "MMMM d, yyyy")
     : "";
+
+  if (!mounted) return null;
 
   return createPortal(
     <AnimatePresence>
@@ -161,8 +166,8 @@ export default function ScholarshipDrawer({ scholarship, onClose }: Props) {
                   <h3 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                     Eligibility Requirements
                   </h3>
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4">
-                    <p className="text-sm leading-relaxed text-amber-900">
+                  <div className="rounded-xl border border-gray-200 bg-gray-100 px-4 py-4">
+                    <p className="text-sm leading-relaxed text-gray-700">
                       {scholarship.eligibility}
                     </p>
                   </div>

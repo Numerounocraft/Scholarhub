@@ -79,5 +79,6 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
+  font-weight: 500;
   -webkit-font-smoothing: antialiased;
 }

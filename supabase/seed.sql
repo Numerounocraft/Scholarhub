@@ -1,4 +1,5 @@
 -- Sample scholarship data — run after schema.sql in the Supabase SQL editor
+-- Uses ON CONFLICT so re-running updates existing rows rather than failing
 
 insert into public.scholarships (title, country, field, degree_level, deadline, link, description, eligibility) values
 
@@ -50,4 +51,9 @@ insert into public.scholarships (title, country, field, degree_level, deadline, 
 ('Swedish Institute Scholarships', 'Sweden', 'Environmental Science', 'masters', '2027-02-10', 'https://si.se/en/apply/scholarships/', 'Full scholarships for global professionals to study a one or two-year master in Sweden.', 'Open to citizens of eligible countries in Asia, Africa, the Middle East, Eastern Europe, and Latin America. Applicants must have a bachelor''s degree, at least 3,000 hours of work experience, and demonstrate leadership potential and a commitment to contributing to sustainable development in their home country after completing the degree.'),
 
 -- Singapore
-('NUS Research Scholarship', 'Singapore', 'Computer Science', 'phd', '2027-03-01', 'https://nusgs.nus.edu.sg/scholarships/', 'Full tuition, monthly stipend, and housing allowance for PhD research at the National University of Singapore.', 'Open to both Singapore citizens and international applicants who have been admitted to an NUS PhD programme. Applicants must hold a good bachelor''s degree with honours (upper second class or equivalent) or a master''s degree in a relevant field. Proficiency in English is required. The scholarship is tenable for up to four years subject to satisfactory academic progress.');
+('NUS Research Scholarship', 'Singapore', 'Computer Science', 'phd', '2027-03-01', 'https://nusgs.nus.edu.sg/scholarships/', 'Full tuition, monthly stipend, and housing allowance for PhD research at the National University of Singapore.', 'Open to both Singapore citizens and international applicants who have been admitted to an NUS PhD programme. Applicants must hold a good bachelor''s degree with honours (upper second class or equivalent) or a master''s degree in a relevant field. Proficiency in English is required. The scholarship is tenable for up to four years subject to satisfactory academic progress.')
+on conflict (link) do update set
+  title = excluded.title,
+  description = excluded.description,
+  eligibility = excluded.eligibility,
+  deadline = excluded.deadline;
