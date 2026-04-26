@@ -1,15 +1,25 @@
-name: Daily Scholarship Notifications
+name: Daily Scholarship Pipeline
 
 on:
   schedule:
-    - cron: "0 8 * * *" # 8:00 AM UTC daily
+    - cron: "0 7 * * *" # 7:00 AM UTC — scrape first
   workflow_dispatch: # allow manual trigger
 
 jobs:
-  notify:
+  scrape:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger notification endpoint
+      - name: Scrape scholarships from RSS feeds
+        run: |
+          curl -f -X POST "${{ secrets.APP_URL }}/api/cron/scrape" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: scrape # runs after scrape completes
+    steps:
+      - name: Send digest emails to matched users
         run: |
           curl -f -X POST "${{ secrets.APP_URL }}/api/cron/notify" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
