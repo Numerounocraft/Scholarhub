@@ -49,7 +49,10 @@ exception when duplicate_object then null;
 end $$;
 
 -- Unique constraint on link so the scraper can upsert without duplicates
-alter table public.scholarships add constraint if not exists scholarships_link_unique unique (link);
+do $$ begin
+  alter table public.scholarships add constraint scholarships_link_unique unique (link);
+exception when duplicate_table then null;
+end $$;
 
 -- Service role bypasses RLS for cron notifications
 -- (service client automatically bypasses RLS)
