@@ -89,7 +89,7 @@ export default function ScholarshipCard({
 
       {/* Description */}
       {description && (
-        <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+        <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-description">
           {description}
         </p>
       )}

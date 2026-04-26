@@ -23,9 +23,11 @@
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
 
-  --border: #f4f4f4;
-  --input: #f4f4f4;
+  --border: #E6E6E6;
+  --input: #E6E6E6;
   --ring: oklch(0.705 0.015 286.067);
+
+  --description: #767676;
 
   --radius: 0.5rem;
 }
@@ -51,6 +53,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-description: var(--description);
 
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);

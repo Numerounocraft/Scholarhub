@@ -22,20 +22,13 @@ export default async function Header() {
         </Link>
 
         <nav className="flex items-center gap-1">
-          <Link
-            href="/"
-            className="inline-flex h-8 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            Browse
-          </Link>
-
           {user ? (
             <>
               <Link
                 href="/preferences"
                 className="inline-flex h-8 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
               >
-                My Alerts
+                Preferences
               </Link>
               <div className="ml-2 h-4 w-px bg-border" />
               <form action="/api/auth/signout" method="POST" className="ml-2">
@@ -51,21 +44,12 @@ export default async function Header() {
               </div>
             </>
           ) : (
-            <>
-              <Link
-                href="/preferences"
-                className="inline-flex h-8 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                My Alerts
-              </Link>
-              <div className="ml-2 h-4 w-px bg-border" />
-              <Link
-                href="/login"
-                className="ml-2 inline-flex h-8 items-center rounded-full bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
-              >
-                Sign in
-              </Link>
-            </>
+            <Link
+              href="/login"
+              className="inline-flex h-8 items-center rounded-full bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+            >
+              Sign in
+            </Link>
           )}
         </nav>
       </div>
