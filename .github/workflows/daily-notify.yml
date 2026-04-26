@@ -1,0 +1,16 @@
+name: Daily Scholarship Notifications
+
+on:
+  schedule:
+    - cron: "0 8 * * *" # 8:00 AM UTC daily
+  workflow_dispatch: # allow manual trigger
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger notification endpoint
+        run: |
+          curl -f -X POST "${{ secrets.APP_URL }}/api/cron/notify" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
