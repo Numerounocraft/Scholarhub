@@ -1,10 +1,20 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import FilterBar, { type Filters } from "@/components/FilterBar";
 import ScholarshipCard from "@/components/ScholarshipCard";
 import ScholarshipDrawer from "@/components/ScholarshipDrawer";
 import type { Scholarship } from "@/lib/types";
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 24 },
+  show: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: "easeOut" as const, delay: i * 0.06 },
+  }),
+};
 
 const EMPTY_FILTERS: Filters = {
   search: "",
@@ -99,13 +109,19 @@ export default function ScholarshipFeed() {
         scholarship={activeScholarship}
         onClose={() => setActiveScholarship(null)}
       />
-      <FilterBar
-        filters={filters}
-        onChange={setFilters}
-        countries={countries}
-        fields={fields}
-        total={displayed.length}
-      />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
+      >
+        <FilterBar
+          filters={filters}
+          onChange={setFilters}
+          countries={countries}
+          fields={fields}
+          total={displayed.length}
+        />
+      </motion.div>
 
       {loading && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -130,13 +146,26 @@ export default function ScholarshipFeed() {
         </div>
       )}
 
-      {!loading && !error && displayed.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {displayed.map((s) => (
-            <ScholarshipCard key={s.id} scholarship={s} onDetails={setActiveScholarship} />
-          ))}
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {!loading && !error && displayed.length > 0 && (
+          <motion.div
+            key={filters.country + filters.field + filters.degree_level}
+            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {displayed.map((s, i) => (
+              <motion.div
+                key={s.id}
+                custom={i}
+                variants={cardVariants}
+                initial="hidden"
+                animate="show"
+              >
+                <ScholarshipCard scholarship={s} onDetails={setActiveScholarship} />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
