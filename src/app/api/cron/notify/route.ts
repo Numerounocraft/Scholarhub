@@ -1,5 +1,4 @@
 import { createServiceClient } from "@/lib/supabase/server";
-import { sendScholarshipDigest } from "@/lib/email/resend";
 import type { Scholarship, UserPreferences } from "@/lib/types";
 
 // Called by GitHub Actions daily via a POST with the CRON_SECRET header
@@ -38,27 +37,26 @@ export async function POST(request: Request) {
     return Response.json({ error: prefError.message }, { status: 500 });
   }
 
-  const { data: { users: authUsers }, error: usersError } = await supabase.auth.admin.listUsers();
-  if (usersError) {
-    console.error("Failed to fetch users:", usersError.message);
-    return Response.json({ error: usersError.message }, { status: 500 });
-  }
-  const emailById = new Map(authUsers.map((u) => [u.id, u.email]));
-
   let sent = 0;
 
   for (const pref of allPreferences ?? []) {
-    const userEmail = emailById.get(pref.user_id);
-    if (!userEmail) continue;
-
     const matched = matchScholarships(newScholarships as Scholarship[], pref as UserPreferences);
     if (matched.length === 0) continue;
 
-    try {
-      await sendScholarshipDigest({ to: userEmail, scholarships: matched });
-      sent++;
-    } catch (err) {
-      console.error(`Failed to send email to ${userEmail}:`, err);
+    const rows = matched.map((s) => ({
+      user_id: pref.user_id,
+      scholarship_id: s.id,
+    }));
+
+    // ON CONFLICT DO NOTHING — avoids duplicates if cron runs twice
+    const { error } = await supabase
+      .from("notifications")
+      .upsert(rows, { onConflict: "user_id,scholarship_id", ignoreDuplicates: true });
+
+    if (error) {
+      console.error(`Failed to insert notifications for ${pref.user_id}:`, error.message);
+    } else {
+      sent += matched.length;
     }
   }
 

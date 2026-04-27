@@ -34,10 +34,19 @@ function SkeletonCard() {
 
 export default function ScholarshipFeed() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
+  const [allScholarships, setAllScholarships] = useState<Scholarship[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [activeScholarship, setActiveScholarship] = useState<Scholarship | null>(null);
+
+  // Load all scholarships once to populate filter options
+  useEffect(() => {
+    fetch("/api/scholarships")
+      .then((r) => r.json())
+      .then((data) => setAllScholarships(data))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -73,13 +82,15 @@ export default function ScholarshipFeed() {
     );
   }, [scholarships, filters.search]);
 
+  // Derive filter options from the full unfiltered list so selecting one filter
+  // doesn't collapse the options in the other dropdowns.
   const countries = useMemo(
-    () => [...new Set(scholarships.map((s) => s.country))].sort(),
-    [scholarships]
+    () => [...new Set(allScholarships.map((s) => s.country))].sort(),
+    [allScholarships]
   );
   const fields = useMemo(
-    () => [...new Set(scholarships.map((s) => s.field))].sort(),
-    [scholarships]
+    () => [...new Set(allScholarships.map((s) => s.field))].sort(),
+    [allScholarships]
   );
 
   return (

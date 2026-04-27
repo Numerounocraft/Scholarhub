@@ -5,10 +5,12 @@ import { cn } from "@/lib/utils";
 import type { UserPreferences, DegreeLevel } from "@/lib/types";
 
 const ALL_COUNTRIES = [
-  "Australia", "Canada", "China", "Denmark", "Finland",
-  "France", "Germany", "Japan", "Netherlands", "New Zealand",
-  "Norway", "Singapore", "South Korea", "Sweden", "Switzerland",
-  "United Kingdom", "United States",
+  "Australia", "Austria", "Belgium", "Brazil", "Canada",
+  "China", "Czech Republic", "Denmark", "Finland", "France",
+  "Germany", "India", "Ireland", "Italy", "Japan",
+  "Netherlands", "New Zealand", "Norway", "Singapore", "South Korea",
+  "Spain", "Sweden", "Switzerland", "Turkey", "United Kingdom",
+  "United States",
 ];
 
 const ALL_FIELDS = [

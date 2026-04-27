@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import NotificationBell from "@/components/NotificationBell";
+import MobileMenu from "@/components/MobileMenu";
 
 export default async function Header() {
   let user = null;
@@ -14,16 +16,17 @@ export default async function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary">
-            <span className="text-[11px] font-bold text-primary-foreground">S</span>
-          </div>
+          <img src="/logo.svg" alt="ScholarHub" className="h-8 w-8 rounded-md" />
           <span className="text-sm font-semibold tracking-tight">ScholarHub</span>
         </Link>
 
-        <nav className="flex items-center gap-1">
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-1 md:flex">
           {user ? (
             <>
+              <NotificationBell />
               <Link
                 href="/preferences"
                 className="inline-flex h-8 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -52,6 +55,12 @@ export default async function Header() {
             </Link>
           )}
         </nav>
+
+        {/* Mobile nav */}
+        <div className="flex items-center gap-2 md:hidden">
+          {user && <NotificationBell />}
+          <MobileMenu isLoggedIn={!!user} />
+        </div>
       </div>
     </header>
   );

@@ -170,7 +170,7 @@ function Select({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 top-full z-50 mt-1.5 min-w-[10rem] overflow-hidden rounded-xl border border-input bg-background shadow-md"
+            className="absolute left-0 top-full z-50 mt-1.5 min-w-[10rem] max-h-60 overflow-y-auto rounded-xl border border-input bg-background shadow-md"
           >
             <motion.button
               type="button"
