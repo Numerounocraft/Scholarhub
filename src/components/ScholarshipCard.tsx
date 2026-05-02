@@ -73,7 +73,7 @@ export default function ScholarshipCard({
     <div className="group flex h-full flex-col rounded-lg border bg-card p-5 transition-all hover:shadow-sm">
       {/* Title row */}
       <div className="flex items-start justify-between gap-3">
-        <h3 className="line-clamp-2 min-h-[2.4rem] text-sm font-semibold leading-snug text-card-foreground transition-colors group-hover:text-primary">
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-card-foreground transition-colors group-hover:text-primary">
           {title}
         </h3>
         <a
@@ -88,7 +88,7 @@ export default function ScholarshipCard({
       </div>
 
       {/* Description — always reserves 2-line height */}
-      <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-description">
+      <p className="mt-4 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-description">
         {description ?? ""}
       </p>
 
