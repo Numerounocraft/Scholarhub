@@ -173,7 +173,7 @@ export default function ScholarshipFeed() {
       {!loading && !error && displayed.length > 0 && (
         <div className="flex flex-col gap-4">
           {/* Tab bar */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
             {visibleTabs.map((cat) => {
               const count = grouped.get(cat)?.length ?? 0;
               const isActive = activeTab === cat;
@@ -181,7 +181,7 @@ export default function ScholarshipFeed() {
                 <button
                   key={cat}
                   onClick={() => setActiveTab(cat)}
-                  className={`relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors ${
+                  className={`relative flex shrink-0 items-center gap-1.5 px-3 py-2.5 text-sm font-medium transition-colors sm:px-4 ${
                     isActive
                       ? "text-foreground"
                       : "text-muted-foreground hover:text-foreground"

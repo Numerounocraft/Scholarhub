@@ -30,9 +30,7 @@ export default function HeroSection() {
         {...fadeUp(0.2)}
         className="mt-2 text-sm text-muted-foreground"
       >
-        Hundreds of global opportunities updated daily. Filter by country,
-        <br />
-        field, or degree — and get alerts for new matches.
+        Hundreds of global opportunities updated daily. Filter by country, field, or degree — and get alerts for new matches.
       </motion.p>
     </div>
   );

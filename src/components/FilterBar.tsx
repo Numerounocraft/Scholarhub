@@ -48,7 +48,7 @@ export default function FilterBar({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
         {/* Search */}
-        <div className="relative min-w-56 flex-1">
+        <div className="relative min-w-0 w-full flex-1 sm:min-w-56">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <input
             type="search"
