@@ -45,20 +45,21 @@ export default function FilterBar({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2">
-        {/* Search */}
-        <div className="relative min-w-0 w-full flex-1 sm:min-w-56">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            placeholder="Search scholarships…"
-            value={filters.search}
-            onChange={(e) => set("search", e.target.value)}
-            className="h-9 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </div>
+    <div className="flex flex-col gap-2">
+      {/* Search — always full width */}
+      <div className="relative w-full">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="search"
+          placeholder="Search scholarships…"
+          value={filters.search}
+          onChange={(e) => set("search", e.target.value)}
+          className="h-9 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        />
+      </div>
 
+      {/* Filters row */}
+      <div className="flex flex-wrap items-center gap-2">
         <Select
           value={filters.country}
           onChange={(v) => set("country", v)}
@@ -99,7 +100,6 @@ export default function FilterBar({
           </button>
         )}
       </div>
-
     </div>
   );
 }
