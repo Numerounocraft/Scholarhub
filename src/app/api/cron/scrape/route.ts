@@ -15,6 +15,10 @@ const RSS_FEEDS = [
   "https://www.scholars4dev.com/feed/",
   "https://scholarship-positions.com/feed/",
   "https://www.afterschoolafrica.com/feed/",
+  "https://worldscholarshipforum.com/feed/",
+  "https://www.opportunitiesforafricans.com/feed/",
+  "https://scholarships360.org/feed/",
+  "https://www.scholarshipregion.com/feed/",
 ];
 
 // ── RSS parsing ───────────────────────────────────────────────────────────────
