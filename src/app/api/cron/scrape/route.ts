@@ -147,6 +147,12 @@ export async function POST(request: Request) {
         skipped++;
         continue;
       }
+
+      // Skip list/roundup/guide articles — not individual scholarship listings
+      if (/^(top \d+|best \d+|\d+ (scholarships|grants|fellowships)|comprehensive guide|how to|how (moms?|students?|nurses?)|essay typer|dress as|tech skills|visa regulations)/i.test(item.title)) {
+        skipped++;
+        continue;
+      }
       candidates.push({ ...item, fullText });
     }
   }
