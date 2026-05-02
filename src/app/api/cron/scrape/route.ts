@@ -28,18 +28,43 @@ const APPLY_TEXT_RE =
 
 const SOCIAL_RE = /facebook|twitter|x\.com|whatsapp|telegram|linkedin|pinterest|instagram|youtube/i;
 
+// Strip blog chrome (nav, social, author, comments) then decode entities
+function cleanHtml(raw: string): string {
+  return raw
+    // Remove entire noisy elements
+    .replace(/<(script|style|nav|header|footer|aside|noscript)[^>]*>[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<div[^>]*class="[^"]*(?:share|social|author|byline|meta|comment|sidebar|related|breadcrumb|tag|widget|ad-|advertisement)[^"]*"[^>]*>[\s\S]*?<\/div>/gi, " ")
+    // Strip remaining tags
+    .replace(/<[^>]*>/g, " ")
+    // Decode entities
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ")
+    .replace(/\s+/g, " ").trim();
+}
+
+// Remove blog metadata lines that appear at the start of article text
+function stripBlogMetadata(text: string): string {
+  return text
+    // "by Author May 1, 2026" / "written by Author"
+    .replace(/\b(by|posted by|written by)\s+[\w\s]{2,30}\s+\w+\s+\d{1,2},?\s+\d{4}\b/gi, " ")
+    // "0 comments", "3 shares", "0 Facebook Twitter..."
+    .replace(/\b\d+\s*(comments?|shares?|likes?|views?)\b/gi, " ")
+    // Social platform names in a row (share buttons rendered as text)
+    .replace(/\b(Facebook|Twitter|LinkedIn|WhatsApp|Email|Pinterest|Telegram|Instagram)\b(\s+(Facebook|Twitter|LinkedIn|WhatsApp|Email|Pinterest|Telegram|Instagram)\b)*/gi, " ")
+    // Breadcrumb prefix like "Scholarships Title" at the very start
+    .replace(/^(Scholarships|Grants|Fellowships|Awards|Home)\s+/i, "")
+    // Leftover digit-only tokens from share counts ("0 1 2")
+    .replace(/(?<!\w)\d{1,3}(?!\w|\.\d)/g, " ")
+    .replace(/\s+/g, " ").trim();
+}
+
 function extractArticleBody(html: string): string | null {
   // 1. Prefer <article> tag
   const articleTag = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
   if (articleTag) {
-    const text = articleTag[1]
-      .replace(/<(script|style|nav|header|footer|aside)[^>]*>[\s\S]*?<\/\1>/gi, " ")
-      .replace(/<[^>]*>/g, " ")
-      .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
-      .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
-      .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-      .replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ")
-      .replace(/\s+/g, " ").trim();
+    const text = stripBlogMetadata(cleanHtml(articleTag[1]));
     if (text.length > 200) return text.slice(0, 6000);
   }
 
@@ -48,11 +73,7 @@ function extractArticleBody(html: string): string | null {
     /<div[^>]*class="[^"]*(?:entry-content|post-content|article-content|article-body|the-content|post-body|td-post-content)[^"]*"[^>]*>([\s\S]*?)<\/div>/i
   );
   if (contentDiv) {
-    const text = contentDiv[1]
-      .replace(/<(script|style|nav|aside)[^>]*>[\s\S]*?<\/\1>/gi, " ")
-      .replace(/<[^>]*>/g, " ")
-      .replace(/&[#a-z0-9]+;/gi, " ")
-      .replace(/\s+/g, " ").trim();
+    const text = stripBlogMetadata(cleanHtml(contentDiv[1]));
     if (text.length > 200) return text.slice(0, 6000);
   }
 
@@ -61,7 +82,7 @@ function extractArticleBody(html: string): string | null {
   const pRe = /<p[^>]*>([\s\S]*?)<\/p>/gi;
   let m: RegExpExecArray | null;
   while ((m = pRe.exec(html)) !== null) {
-    const t = m[1].replace(/<[^>]*>/g, "").replace(/&[#a-z0-9]+;/gi, " ").replace(/\s+/g, " ").trim();
+    const t = stripBlogMetadata(cleanHtml(m[1]));
     if (t.length > 60) paragraphs.push(t);
   }
   if (paragraphs.length > 0) return paragraphs.join(" ").slice(0, 6000);

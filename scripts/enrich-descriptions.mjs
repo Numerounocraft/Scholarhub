@@ -30,17 +30,32 @@ const APPLY_TEXT_RE =
 const SOCIAL_RE =
   /facebook|twitter|x\.com|whatsapp|telegram|linkedin|pinterest|instagram|youtube/i;
 
+function cleanHtml(raw) {
+  return raw
+    .replace(/<(script|style|nav|header|footer|aside|noscript)[^>]*>[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<div[^>]*class="[^"]*(?:share|social|author|byline|meta|comment|sidebar|related|breadcrumb|tag|widget|ad-|advertisement)[^"]*"[^>]*>[\s\S]*?<\/div>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ")
+    .replace(/\s+/g, " ").trim();
+}
+
+function stripBlogMetadata(text) {
+  return text
+    .replace(/\b(by|posted by|written by)\s+[\w\s]{2,30}\s+\w+\s+\d{1,2},?\s+\d{4}\b/gi, " ")
+    .replace(/\b\d+\s*(comments?|shares?|likes?|views?)\b/gi, " ")
+    .replace(/\b(Facebook|Twitter|LinkedIn|WhatsApp|Email|Pinterest|Telegram|Instagram)\b(\s+(Facebook|Twitter|LinkedIn|WhatsApp|Email|Pinterest|Telegram|Instagram)\b)*/gi, " ")
+    .replace(/^(Scholarships|Grants|Fellowships|Awards|Home)\s+/i, "")
+    .replace(/(?<!\w)\d{1,3}(?!\w|\.\d)/g, " ")
+    .replace(/\s+/g, " ").trim();
+}
+
 function extractArticleBody(html) {
   const articleTag = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
   if (articleTag) {
-    const text = articleTag[1]
-      .replace(/<(script|style|nav|header|footer|aside)[^>]*>[\s\S]*?<\/\1>/gi, " ")
-      .replace(/<[^>]*>/g, " ")
-      .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
-      .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
-      .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-      .replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ")
-      .replace(/\s+/g, " ").trim();
+    const text = stripBlogMetadata(cleanHtml(articleTag[1]));
     if (text.length > 200) return text.slice(0, 6000);
   }
 
@@ -48,11 +63,7 @@ function extractArticleBody(html) {
     /<div[^>]*class="[^"]*(?:entry-content|post-content|article-content|article-body|the-content|post-body|td-post-content)[^"]*"[^>]*>([\s\S]*?)<\/div>/i
   );
   if (contentDiv) {
-    const text = contentDiv[1]
-      .replace(/<(script|style|nav|aside)[^>]*>[\s\S]*?<\/\1>/gi, " ")
-      .replace(/<[^>]*>/g, " ")
-      .replace(/&[#a-z0-9]+;/gi, " ")
-      .replace(/\s+/g, " ").trim();
+    const text = stripBlogMetadata(cleanHtml(contentDiv[1]));
     if (text.length > 200) return text.slice(0, 6000);
   }
 
@@ -60,7 +71,7 @@ function extractArticleBody(html) {
   const pRe = /<p[^>]*>([\s\S]*?)<\/p>/gi;
   let m;
   while ((m = pRe.exec(html)) !== null) {
-    const t = m[1].replace(/<[^>]*>/g, "").replace(/&[#a-z0-9]+;/gi, " ").replace(/\s+/g, " ").trim();
+    const t = stripBlogMetadata(cleanHtml(m[1]));
     if (t.length > 60) paragraphs.push(t);
   }
   if (paragraphs.length > 0) return paragraphs.join(" ").slice(0, 6000);
@@ -162,7 +173,7 @@ async function main() {
       const { id, currentDesc } = batch[j];
       const { description, applyLink } = results[j];
 
-      if (!description || description.length <= (currentDesc?.length ?? 0)) {
+      if (!description) {
         skipped++;
         continue;
       }
