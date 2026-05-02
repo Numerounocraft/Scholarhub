@@ -70,10 +70,10 @@ export default function ScholarshipCard({
     scholarship;
 
   return (
-    <div className="group flex flex-col rounded-lg border bg-card p-5 transition-all hover:shadow-sm">
+    <div className="group flex h-full flex-col rounded-lg border bg-card p-5 transition-all hover:shadow-sm">
       {/* Title row */}
       <div className="flex items-start justify-between gap-3">
-        <h3 className="text-sm font-semibold leading-snug text-card-foreground group-hover:text-primary transition-colors">
+        <h3 className="line-clamp-2 min-h-[2.4rem] text-sm font-semibold leading-snug text-card-foreground transition-colors group-hover:text-primary">
           {title}
         </h3>
         <a
@@ -87,12 +87,10 @@ export default function ScholarshipCard({
         </a>
       </div>
 
-      {/* Description */}
-      {description && (
-        <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-description">
-          {description}
-        </p>
-      )}
+      {/* Description — always reserves 2-line height */}
+      <p className="mt-2 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-description">
+        {description ?? ""}
+      </p>
 
       {/* Badges */}
       <div className="mt-3 flex flex-wrap gap-1.5">
@@ -110,8 +108,8 @@ export default function ScholarshipCard({
         </Badge>
       </div>
 
-      {/* Footer */}
-      <div className="mt-4 flex items-center justify-between">
+      {/* Footer — pinned to bottom */}
+      <div className="mt-auto pt-4 flex items-center justify-between">
         <DeadlineChip deadline={deadline} />
         <div className="flex items-center gap-2">
           {onDetails && (
