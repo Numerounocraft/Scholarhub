@@ -58,8 +58,19 @@ export default async function Header() {
 
         {/* Mobile nav */}
         <div className="flex items-center gap-2 md:hidden">
-          {user && <NotificationBell />}
-          <MobileMenu isLoggedIn={!!user} />
+          {user ? (
+            <>
+              <NotificationBell />
+              <MobileMenu />
+            </>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex h-8 items-center rounded-full bg-primary px-3 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+            >
+              Sign in
+            </Link>
+          )}
         </div>
       </div>
     </header>

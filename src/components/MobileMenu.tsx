@@ -5,11 +5,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface MobileMenuProps {
-  isLoggedIn: boolean;
-}
-
-export default function MobileMenu({ isLoggedIn }: MobileMenuProps) {
+export default function MobileMenu() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -42,34 +38,22 @@ export default function MobileMenu({ isLoggedIn }: MobileMenuProps) {
             transition={{ duration: 0.15 }}
             className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-input bg-background shadow-lg"
           >
-            {isLoggedIn ? (
-              <>
-                <Link
-                  href="/preferences"
-                  onClick={() => setOpen(false)}
-                  className="flex w-full items-center px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                >
-                  Preferences
-                </Link>
-                <div className="h-px bg-border" />
-                <form action="/api/auth/signout" method="POST">
-                  <button
-                    type="submit"
-                    className="flex w-full items-center px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    Sign out
-                  </button>
-                </form>
-              </>
-            ) : (
-              <Link
-                href="/login"
-                onClick={() => setOpen(false)}
-                className="flex w-full items-center px-4 py-3 text-sm font-medium transition-colors hover:bg-accent"
+            <Link
+              href="/preferences"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              Preferences
+            </Link>
+            <div className="h-px bg-border" />
+            <form action="/api/auth/signout" method="POST">
+              <button
+                type="submit"
+                className="flex w-full items-center px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
               >
-                Sign in
-              </Link>
-            )}
+                Sign out
+              </button>
+            </form>
           </motion.div>
         )}
       </AnimatePresence>
