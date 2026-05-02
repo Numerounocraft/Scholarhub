@@ -173,7 +173,7 @@ export default function ScholarshipFeed() {
       {!loading && !error && displayed.length > 0 && (
         <div className="flex flex-col gap-4">
           {/* Tab bar */}
-          <div className="flex gap-1 border-b">
+          <div className="flex gap-1">
             {visibleTabs.map((cat) => {
               const count = grouped.get(cat)?.length ?? 0;
               const isActive = activeTab === cat;
