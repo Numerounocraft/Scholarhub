@@ -7,6 +7,18 @@ import ScholarshipCard from "@/components/ScholarshipCard";
 import ScholarshipDrawer from "@/components/ScholarshipDrawer";
 import type { Scholarship } from "@/lib/types";
 
+type Category = "Scholarships" | "Grants" | "Fellowships" | "Other";
+
+const CATEGORY_ORDER: Category[] = ["Scholarships", "Grants", "Fellowships", "Other"];
+
+function detectCategory(title: string): Category {
+  const t = title.toLowerCase();
+  if (t.includes("fellowship")) return "Fellowships";
+  if (t.includes("grant")) return "Grants";
+  if (t.includes("scholarship")) return "Scholarships";
+  return "Other";
+}
+
 const cardVariants = {
   hidden: { opacity: 0, y: 24 },
   show: (i: number) => ({
@@ -150,19 +162,30 @@ export default function ScholarshipFeed() {
         {!loading && !error && displayed.length > 0 && (
           <motion.div
             key={filters.country + filters.field + filters.degree_level}
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            className="flex flex-col gap-10"
           >
-            {displayed.map((s, i) => (
-              <motion.div
-                key={s.id}
-                custom={i}
-                variants={cardVariants}
-                initial="hidden"
-                animate="show"
-              >
-                <ScholarshipCard scholarship={s} onDetails={setActiveScholarship} />
-              </motion.div>
-            ))}
+            {CATEGORY_ORDER.map((category) => {
+              const items = displayed.filter((s) => detectCategory(s.title) === category);
+              if (items.length === 0) return null;
+              return (
+                <section key={category}>
+                  <h2 className="mb-4 text-lg font-semibold tracking-tight">{category}</h2>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {items.map((s, i) => (
+                      <motion.div
+                        key={s.id}
+                        custom={i}
+                        variants={cardVariants}
+                        initial="hidden"
+                        animate="show"
+                      >
+                        <ScholarshipCard scholarship={s} onDetails={setActiveScholarship} />
+                      </motion.div>
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>
