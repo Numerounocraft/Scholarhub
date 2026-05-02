@@ -61,6 +61,7 @@ export default function ScholarshipFeed() {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [activeScholarship, setActiveScholarship] = useState<Scholarship | null>(null);
+  const [activeTab, setActiveTab] = useState<Category>("Scholarships");
 
   // Load all scholarships once to populate filter options
   useEffect(() => {
@@ -115,6 +116,17 @@ export default function ScholarshipFeed() {
     [allScholarships]
   );
 
+  const grouped = useMemo(() => {
+    const map = new Map<Category, Scholarship[]>();
+    for (const cat of CATEGORY_ORDER) map.set(cat, []);
+    for (const s of displayed) map.get(detectCategory(s.title))!.push(s);
+    return map;
+  }, [displayed]);
+
+  const visibleTabs = CATEGORY_ORDER.filter((cat) => (grouped.get(cat)?.length ?? 0) > 0);
+
+  const tabItems = grouped.get(activeTab) ?? [];
+
   return (
     <div className="flex flex-col gap-4">
       <ScholarshipDrawer
@@ -158,37 +170,69 @@ export default function ScholarshipFeed() {
         </div>
       )}
 
-      <AnimatePresence mode="wait">
-        {!loading && !error && displayed.length > 0 && (
-          <motion.div
-            key={filters.country + filters.field + filters.degree_level}
-            className="flex flex-col gap-10"
-          >
-            {CATEGORY_ORDER.map((category) => {
-              const items = displayed.filter((s) => detectCategory(s.title) === category);
-              if (items.length === 0) return null;
+      {!loading && !error && displayed.length > 0 && (
+        <div className="flex flex-col gap-4">
+          {/* Tab bar */}
+          <div className="flex gap-1 border-b">
+            {visibleTabs.map((cat) => {
+              const count = grouped.get(cat)?.length ?? 0;
+              const isActive = activeTab === cat;
               return (
-                <section key={category}>
-                  <h2 className="mb-4 text-lg font-semibold tracking-tight">{category}</h2>
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {items.map((s, i) => (
-                      <motion.div
-                        key={s.id}
-                        custom={i}
-                        variants={cardVariants}
-                        initial="hidden"
-                        animate="show"
-                      >
-                        <ScholarshipCard scholarship={s} onDetails={setActiveScholarship} />
-                      </motion.div>
-                    ))}
-                  </div>
-                </section>
+                <button
+                  key={cat}
+                  onClick={() => setActiveTab(cat)}
+                  className={`relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {cat}
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-xs font-medium ${
+                      isActive
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="tab-underline"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-foreground"
+                    />
+                  )}
+                </button>
               );
             })}
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+
+          {/* Tab content */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            >
+              {tabItems.map((s, i) => (
+                <motion.div
+                  key={s.id}
+                  custom={i}
+                  variants={cardVariants}
+                  initial="hidden"
+                  animate="show"
+                >
+                  <ScholarshipCard scholarship={s} onDetails={setActiveScholarship} />
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }
