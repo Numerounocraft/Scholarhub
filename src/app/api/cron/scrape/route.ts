@@ -21,45 +21,89 @@ const RSS_FEEDS = [
   "https://www.scholarshipregion.com/feed/",
 ];
 
-// ── apply-link keywords ───────────────────────────────────────────────────────
+// ── article enrichment ───────────────────────────────────────────────────────
 
 const APPLY_TEXT_RE =
   /apply\s*(now|here|online|today)?|official\s*(website|link|page|portal|application)|register\s*(now|here)?|click\s*here\s*to\s*apply|scholarship\s*(link|portal)|application\s*(form|portal|page)/i;
 
 const SOCIAL_RE = /facebook|twitter|x\.com|whatsapp|telegram|linkedin|pinterest|instagram|youtube/i;
 
-// Fetch the article page and return the first outbound "apply" link found,
-// falling back to the article URL itself.
-async function extractApplyLink(articleUrl: string): Promise<string> {
+function extractArticleBody(html: string): string | null {
+  // 1. Prefer <article> tag
+  const articleTag = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
+  if (articleTag) {
+    const text = articleTag[1]
+      .replace(/<(script|style|nav|header|footer|aside)[^>]*>[\s\S]*?<\/\1>/gi, " ")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+      .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+      .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+      .replace(/&nbsp;/g, " ").replace(/&[a-z]+;/gi, " ")
+      .replace(/\s+/g, " ").trim();
+    if (text.length > 200) return text.slice(0, 6000);
+  }
+
+  // 2. Common CMS content div classes
+  const contentDiv = html.match(
+    /<div[^>]*class="[^"]*(?:entry-content|post-content|article-content|article-body|the-content|post-body|td-post-content)[^"]*"[^>]*>([\s\S]*?)<\/div>/i
+  );
+  if (contentDiv) {
+    const text = contentDiv[1]
+      .replace(/<(script|style|nav|aside)[^>]*>[\s\S]*?<\/\1>/gi, " ")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&[#a-z0-9]+;/gi, " ")
+      .replace(/\s+/g, " ").trim();
+    if (text.length > 200) return text.slice(0, 6000);
+  }
+
+  // 3. Collect all substantial <p> tags
+  const paragraphs: string[] = [];
+  const pRe = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = pRe.exec(html)) !== null) {
+    const t = m[1].replace(/<[^>]*>/g, "").replace(/&[#a-z0-9]+;/gi, " ").replace(/\s+/g, " ").trim();
+    if (t.length > 60) paragraphs.push(t);
+  }
+  if (paragraphs.length > 0) return paragraphs.join(" ").slice(0, 6000);
+
+  return null;
+}
+
+// Fetch the article page; return the best outbound apply link and
+// the full article body text (both fall back gracefully).
+async function processArticle(
+  articleUrl: string
+): Promise<{ link: string; description: string | null }> {
   try {
     const res = await fetch(articleUrl, {
       headers: { "User-Agent": "ScholarHub/1.0 (+https://scholarhub.app)" },
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(10000),
     });
-    if (!res.ok) return articleUrl;
+    if (!res.ok) return { link: articleUrl, description: null };
 
     const html = await res.text();
     const articleHost = new URL(articleUrl).hostname;
+
+    // Extract apply link
+    let applyLink = articleUrl;
     const linkRe = /<a\s[^>]*href="([^"#][^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
     let match: RegExpExecArray | null;
-
     while ((match = linkRe.exec(html)) !== null) {
       const href = match[1];
       const text = match[2].replace(/<[^>]*>/g, "").trim();
-
       if (!href.startsWith("http")) continue;
-      try {
-        if (new URL(href).hostname === articleHost) continue;
-      } catch {
-        continue;
-      }
+      try { if (new URL(href).hostname === articleHost) continue; } catch { continue; }
       if (SOCIAL_RE.test(href)) continue;
-      if (APPLY_TEXT_RE.test(text)) return href;
+      if (APPLY_TEXT_RE.test(text)) { applyLink = href; break; }
     }
+
+    // Extract full article body
+    const description = extractArticleBody(html);
+
+    return { link: applyLink, description };
   } catch {
-    // fall through
+    return { link: articleUrl, description: null };
   }
-  return articleUrl;
 }
 
 // ── RSS parsing ───────────────────────────────────────────────────────────────
@@ -157,13 +201,13 @@ export async function POST(request: Request) {
     }
   }
 
-  // Extract real apply links in batches of 8 concurrent requests
+  // Process articles in batches of 8 — extract apply link + full body
   const BATCH = 8;
-  const applyLinks: string[] = [];
+  const enriched: { link: string; description: string | null }[] = [];
   for (let i = 0; i < candidates.length; i += BATCH) {
     const batch = candidates.slice(i, i + BATCH);
-    const links = await Promise.all(batch.map((c) => extractApplyLink(c.articleUrl)));
-    applyLinks.push(...links);
+    const results = await Promise.all(batch.map((c) => processArticle(c.articleUrl)));
+    enriched.push(...results);
   }
 
   // Upsert into Supabase
@@ -172,12 +216,16 @@ export async function POST(request: Request) {
 
   for (let idx = 0; idx < candidates.length; idx++) {
     const item = candidates[idx];
-    const link = applyLinks[idx];
+    const { link, description: articleDescription } = enriched[idx];
 
-    const country = classify(item.fullText, COUNTRY_KEYWORDS, "International" as string);
-    const field = classify(item.fullText, FIELD_KEYWORDS, "Arts & Humanities" as string);
-    const degree_level = detectDegree(item.fullText);
-    const deadline = detectDeadline(item.fullText);
+    // Prefer the full article body; fall back to the RSS snippet
+    const description = (articleDescription ?? item.description) || null;
+    const fullText = `${item.title} ${description ?? item.description}`;
+
+    const country = classify(fullText, COUNTRY_KEYWORDS, "International" as string);
+    const field = classify(fullText, FIELD_KEYWORDS, "Arts & Humanities" as string);
+    const degree_level = detectDegree(fullText);
+    const deadline = detectDeadline(fullText);
 
     const { error } = await supabase.from("scholarships").upsert(
       {
@@ -187,7 +235,7 @@ export async function POST(request: Request) {
         degree_level,
         deadline,
         link,
-        description: item.description || null,
+        description,
         eligibility: item.eligibility || null,
       },
       { onConflict: "link", ignoreDuplicates: true }
