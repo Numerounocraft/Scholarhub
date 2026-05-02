@@ -213,8 +213,16 @@ export async function POST(request: Request) {
         continue;
       }
 
-      // Skip list/roundup/guide articles — not individual scholarship listings
+      // Skip list/roundup/guide/advice articles — not individual scholarship listings
       if (/^(top \d+|best \d+|\d+ (scholarships|grants|fellowships)|comprehensive guide|how to|how (moms?|students?|nurses?)|essay typer|dress as|tech skills|visa regulations)/i.test(item.title)) {
+        skipped++;
+        continue;
+      }
+      if (/\b(business ideas?|side hustles?|ways to make money|career tips|job search|resume tips|cover letter|interview tips|study tips|productivity tips)\b/i.test(item.title)) {
+        skipped++;
+        continue;
+      }
+      if (/^what (business|job|career|course|skill)/i.test(item.title)) {
         skipped++;
         continue;
       }
