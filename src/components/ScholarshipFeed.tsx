@@ -206,6 +206,9 @@ export default function ScholarshipFeed() {
                 </button>
               );
             })}
+            <span className="ml-auto rounded border border-input bg-background p-1 text-xs text-muted-foreground">
+              {displayed.length} scholarship{displayed.length === 1 ? "" : "s"}
+            </span>
           </div>
 
           {/* Tab content */}
