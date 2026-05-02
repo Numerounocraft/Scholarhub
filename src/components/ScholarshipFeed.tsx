@@ -172,6 +172,11 @@ export default function ScholarshipFeed() {
 
       {!loading && !error && displayed.length > 0 && (
         <div className="flex flex-col gap-4">
+          {/* Count — above tabs on mobile only */}
+          <span className="text-xs italic text-muted-foreground sm:hidden">
+            {displayed.length} scholarship{displayed.length === 1 ? "" : "s"}
+          </span>
+
           {/* Tab bar */}
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
             {visibleTabs.map((cat) => {
@@ -206,7 +211,7 @@ export default function ScholarshipFeed() {
                 </button>
               );
             })}
-            <span className="ml-auto text-xs italic text-muted-foreground">
+            <span className="ml-auto hidden text-xs italic text-muted-foreground sm:inline">
               {displayed.length} scholarship{displayed.length === 1 ? "" : "s"}
             </span>
           </div>
