@@ -55,8 +55,13 @@ export default function FilterBar({
             placeholder="Search scholarships…"
             value={filters.search}
             onChange={(e) => set("search", e.target.value)}
-            className="h-9 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-9 w-full rounded-md border border-input bg-background pl-9 pr-28 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
+          {total > 0 && (
+            <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-input bg-background p-1 text-xs text-muted-foreground">
+              {total} scholarship{total === 1 ? "" : "s"}
+            </span>
+          )}
         </div>
 
         <Select
@@ -100,11 +105,6 @@ export default function FilterBar({
         )}
       </div>
 
-      {total > 0 && (
-        <p className="text-xs text-muted-foreground">
-          {total} scholarship{total === 1 ? "" : "s"}
-        </p>
-      )}
     </div>
   );
 }
