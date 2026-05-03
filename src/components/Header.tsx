@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import NotificationBell from "@/components/NotificationBell";
 import MobileMenu from "@/components/MobileMenu";
+import { getSiteSettings } from "@/lib/settings";
 
 export default async function Header() {
   let user = null;
@@ -13,13 +14,16 @@ export default async function Header() {
     // Supabase not configured — render unauthenticated
   }
 
+  const { brand_name, logo_url } = await getSiteSettings();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <img src="/logo.svg" alt="ScholarHub" className="h-8 w-8 rounded-md" />
-          <span className="text-sm font-semibold tracking-tight">ScholarHub</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={logo_url} alt={brand_name} className="h-8 w-8 rounded-md object-contain" />
+          <span className="text-sm font-semibold tracking-tight">{brand_name}</span>
         </Link>
 
         {/* Desktop nav */}
