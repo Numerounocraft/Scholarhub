@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED_PATHS = ["/preferences", "/reset-password"];
+const ADMIN_PATHS = ["/admin"];
 const AUTH_PATHS = ["/login", "/signup"];
 
 export async function proxy(request: NextRequest) {
@@ -43,10 +44,16 @@ export async function proxy(request: NextRequest) {
 
     const { pathname } = request.nextUrl;
 
-    if (!user && PROTECTED_PATHS.some((p) => pathname.startsWith(p))) {
+    const isAdmin = ADMIN_PATHS.some((p) => pathname.startsWith(p));
+
+    if (!user && (PROTECTED_PATHS.some((p) => pathname.startsWith(p)) || isAdmin)) {
       return NextResponse.redirect(
         new URL(`/login?next=${encodeURIComponent(pathname)}`, request.url)
       );
+    }
+
+    if (user && isAdmin && user.user_metadata?.role !== "admin") {
+      return NextResponse.redirect(new URL("/", request.url));
     }
 
     if (user && AUTH_PATHS.some((p) => pathname.startsWith(p))) {

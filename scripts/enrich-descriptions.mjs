@@ -48,7 +48,7 @@ function stripBlogMetadata(text) {
     .replace(/\b\d+\s*(comments?|shares?|likes?|views?)\b/gi, " ")
     .replace(/\b(Facebook|Twitter|LinkedIn|WhatsApp|Email|Pinterest|Telegram|Instagram)\b(\s+(Facebook|Twitter|LinkedIn|WhatsApp|Email|Pinterest|Telegram|Instagram)\b)*/gi, " ")
     .replace(/^(Scholarships|Grants|Fellowships|Awards|Home)\s+/i, "")
-    .replace(/(?<!\w)\d{1,3}(?!\w|\.\d)/g, " ")
+    .replace(/(?<!\w|\$|,)\d{1,3}(?!\w|\.\d|,)/g, " ")
     .replace(/\s+/g, " ").trim();
 }
 

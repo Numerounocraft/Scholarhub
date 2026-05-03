@@ -9,6 +9,7 @@ const scholarshipSchema = z.object({
   deadline: z.string().min(1),
   link: z.url(),
   description: z.string().optional(),
+  eligibility: z.string().optional(),
 });
 
 export async function GET(request: Request) {
